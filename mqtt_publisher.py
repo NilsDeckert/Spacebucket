@@ -1,11 +1,34 @@
-import paho.mqtt.publish as publish     #Needed for mqtt
-import time                             #Needed for 'cooldown'
-import random                           #Only needed for this example to generate random numbers, not needed in actual project
+import paho.mqtt.publish as publish
+import RPi.GPIO as GPIO
+import Adafruit_DHT
+import time
+import datetime
 
-MQTT_SERVER = "192.168.178.66"          #Local IP-Address of the Raspberry Pi 2
-MQTT_PATH = "test_channel"              #Channel the data is being sent in
+MQTT_SERVER = "192.168.178.66"                                                          #IP of the receiving Raspberry Pi
+DHTSensor = Adafruit_DHT.DHT11                                                          #Sensor
+GPIO_Pin = 23                                                                           #GPIO Pin the sensor is connected to
 
-while True:                             #Infinite Loop
+print("-----------------------------------------------------------------")
+print("                    Publisher program started                    ")
+print("-----------------------------------------------------------------")
 
-        publish.single(MQTT_PATH, random.randint(1,10), hostname=MQTT_SERVER)   #Sending a random Number between 1 and 10
-        time.sleep(15)                                                          #Waiting 15seconds until the next loop
+while True:
+    try:
+        while True:
+            Humidity, Temperature = Adafruit_DHT.read_retry(DHTSensor, GPIO_Pin)        #Defining 'Humidity' and 'Temperature' as the output of the sensor
+
+            if Humidity is not None and Temperature is not None:                        #Making sure the sensor has proper output
+
+                publish.single("tmp_humidity", Humidity, hostname=MQTT_SERVER)
+                print("humidity sent ({0:0.1f})%").format(Humidity)
+                time.sleep(1)                                                           #Wait 1s just to make sure everything gets processed properly
+                publish.single("tmp_temperature", Temperature, hostname=MQTT_SERVER)
+                print("temperature sent ({0:0.1f})C").format(Temperature)
+                time.sleep(29)                                                          #Wait 29s (30 in total) until the next loop
+
+            else:
+                print("Error1")
+
+    except KeyboardInterrupt:                                                           #On Ctrl + C:
+        exit()                                                                          #Program quits
+        GPIO.cleanup()                                                                  #GPIO pins get 'cleaned up'
