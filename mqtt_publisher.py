@@ -11,24 +11,27 @@ GPIO_Pin = 23                                                                   
 print("-----------------------------------------------------------------")
 print("                    Publisher program started                    ")
 print("-----------------------------------------------------------------")
+print("")
+print("|------------|------------------------|-----------|")
 
-while True:
-    try:
-        while True:
-            Humidity, Temperature = Adafruit_DHT.read_retry(DHTSensor, GPIO_Pin)        #Defining 'Humidity' and 'Temperature' as the output of the sensor
+try:
+    while True:
+        date = datetime.datetime.now().strftime('%d.%m.%Y')
+        timeNow = datetime.datetime.now().strftime('%H:%M:%S')
+        Humidity, Temperature = Adafruit_DHT.read_retry(DHTSensor, GPIO_Pin)        #Defining 'Humidity' and 'Temperature' as the output of the sensor
 
-            if Humidity is not None and Temperature is not None:                        #Making sure the sensor has proper output
+        if Humidity is not None and Temperature is not None:                        #Making sure the sensor has proper output
 
-                publish.single("tmp_humidity", Humidity, hostname=MQTT_SERVER)
-                print("humidity sent ({0:0.1f})%").format(Humidity)
-                time.sleep(1)                                                           #Wait 1s just to make sure everything gets processed properly
-                publish.single("tmp_temperature", Temperature, hostname=MQTT_SERVER)
-                print("temperature sent ({0:0.1f})C").format(Temperature)
-                time.sleep(29)                                                          #Wait 29s (30 in total) until the next loop
+            publish.single("tmp_humidity", Humidity, hostname=MQTT_SERVER)
+            print("| {} | humidity sent          |  ({})%  |").format(date, Humidity)
+            time.sleep(1)                                                           #Wait 1s just to make sure everything gets processed properly
+            publish.single("tmp_temperature", Temperature, hostname=MQTT_SERVER)
+            print("| {}   | temperature sent       |  ({})C  |").format(timeNow, Temperature)
+            time.sleep(29)                                                          #Wait 29s (30 in total) until the next loop
 
-            else:
-                print("Error1")
+        else:
+            print("Error")
 
-    except KeyboardInterrupt:                                                           #On Ctrl + C:
-        exit()                                                                          #Program quits
-        GPIO.cleanup()                                                                  #GPIO pins get 'cleaned up'
+except KeyboardInterrupt:                                                           #On Ctrl + C:
+    exit()                                                                          #Program quits
+    GPIO.cleanup()                                                                  #GPIO pins get 'cleaned up'
