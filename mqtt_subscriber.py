@@ -1,18 +1,12 @@
 
 import paho.mqtt.client as mqtt             #Needed for mqtt
 import datetime                             #Need for timestamps
-import mysql.connector                      #Needed to connect to MySQL
+import pw                                   #Imports login credentials from pw.py, inlcudes mysql.connector
 
 
 MQTT_SERVER = "localhost"                   #MQTT Server (this Raspi)
 
-mydb = mysql.connector.connect(             #MySQL login details
-        host="188.**.**.***",
-        port="3306",
-        user="***063_pi",
-        passwd="*********",
-        database="***063_test"
-)
+mydb = pw.login                             #MySQL login details
 
 mycursor = mydb.cursor()
 
