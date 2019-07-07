@@ -82,7 +82,7 @@ push()
 while True:
     try:
         global stopthread
-        command = raw_input()
+        command = input()
         print("Input: "+ " " + command)
         print("")
         print("|------------|------------------------|-----------|")
@@ -91,10 +91,14 @@ while True:
             timeNow = datetime.datetime.now().strftime('%H:%M:%S')
             Humidity, Temperature = Adafruit_DHT.read_retry(DHTSensor, GPIO_Pin)
             publish.single("tmp_humidity", Humidity, hostname=MQTT_SERVER)
-            print("| {} | humidity sent          |   {}%   |").format(date, Humidity)
+            print("| {} | humidity sent          |   {}%   |".format(date, Humidity))
             time.sleep(1)
             publish.single("tmp_temperature", Temperature, hostname=MQTT_SERVER)
-            print("| {}   | temperature sent       |   {}°C  |").format(timeNow, Temperature)
+            print("| {}   | temperature sent       |   {}°C  |".format(timeNow, Temperature))
             print("|------------|------------------------|-----------|")
+        elif command == "exit":
+            stopthread = 1
+            cleanup_stop_thread()
+            raise SystemExit(0)
     except:
         exit()
