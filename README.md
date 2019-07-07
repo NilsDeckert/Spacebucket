@@ -8,6 +8,8 @@ For this project I'm using two Raspberry Pis, a Zero W (publisher) to capture se
 
 ![Imgur](https://i.imgur.com/KGCkV81.png)
 
+### Table of contents
+
 1. [Introduction](#spacebucket)
 
 2. [Getting started / Setup](#prerequisites--setup)
