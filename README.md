@@ -12,7 +12,7 @@ For this project I'm using two Raspberry Pis, a Zero W (publisher) to capture se
 
 1. [Introduction](#spacebucket)
 
-2. [Getting started / Setup](#prerequisites--setup)
+2. [Getting started / Setup](#getting-started)
 
    - [Publisher](#publisher)
    
