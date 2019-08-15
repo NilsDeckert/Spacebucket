@@ -105,6 +105,7 @@ python3 -m pip install mysql-connector
 ### Files on the subscriber:
 * mqtt_subscriber.py
 * outlet.cpp
+* emailinfo.py
 * pw.py
 
 ### pw.py
@@ -128,10 +129,20 @@ sudo python3 mqtt_publisher.py
 
 With the publisher program running, you can also use commands to interven in the program:
 ### Commands:
-As of right now, there is only one command available
+
+To list all available commands type:
+```
+help
+```
 
 To read the current sensor data and send it to the subscriber, use
 ```
 force measure
 ```
 The cycle in which the software measures the data will not be shifted by this
+
+You can manually adjust the fanspeed using:
+```
+fanspeed
+```
+followed by a number between 0 and 1000 in the next line.
