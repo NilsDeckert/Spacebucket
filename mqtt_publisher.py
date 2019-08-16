@@ -90,7 +90,7 @@ def push2():
         Humidity, Temperature = Adafruit_DHT.read_retry(DHTSensor, GPIO_Pin)
         publish.single("tmp_temperature", int(Temperature), hostname=MQTT_SERVER)
         print("| {}   | temperature sent       |   {}°C  |".format(timeNow, Temperature))
-        t2 = threading.Timer(900, push, args=[])
+        t2 = threading.Timer(900, push2, args=[])
         t2.start()
         if stopthread is 1:
     #        _stop_event.set()
@@ -109,6 +109,7 @@ push()
 print(">>> {} Setting up initial time delay".format(datetime.datetime.now().strftime('%H:%M:%S')))
 time.sleep(450)
 print(">>> Done")
+print("|------------|------------------------|-----------|")
 push2()
 while True:
     try:

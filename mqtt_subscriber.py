@@ -22,10 +22,13 @@ wiringpi.pwmWrite(18,0)                     # set pwm to zero initially
 fanspeed = 250
 light = 0
 newday = 0
+failedHumidity = 0
+failedTemperature = 0
+global failedHumidity
+global failedTemperature
 global light
 global LightOn
 global LightOff
-
 ################### Welcome Message ###################
 print("-----------------------------------------------------------------")
 print("                   Subscriber program started                    ")
@@ -35,7 +38,10 @@ def fetchall():
     global midnight
     global LightFrom
     global LightTo
+    global LightOn
+    global LightOff
     global mycursor
+    global setTemperature
     try:
         mycursor = mydb.cursor()
         mycursor.execute("SELECT * FROM settings")
@@ -59,8 +65,6 @@ def fetchall():
     except Error as e:
         print ("Error while connecting to MySQL", e)
 
-    global LightOn
-    global LightOff
     midnight = datetime.datetime.combine(datetime.datetime.now().date(), datetime.time(0, 0))
     LightFrom = LightOn + midnight
     LightTo = LightOff + midnight
@@ -147,6 +151,8 @@ def on_message(client, userdata, msg):
     global light
     global LightOn
     global LightOff
+    global failedHumidity
+    global failedTemperature
 
     localtime = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     date = datetime.datetime.now().strftime('%d.%m.%Y')
@@ -159,58 +165,109 @@ def on_message(client, userdata, msg):
     LightTo = LightOff + midnight
 
     if msg.topic == "tmp_humidity":
-            temphumidity.humidity = payload
-            print("|------------|------------------------|-----------|")
-            print("| {} | humidity               |   {}%   |".format(date, payload))
-            try:
-                sql = "INSERT INTO tmp_humidity (bed, date, time, value) VALUES (%s, %s, %s, %s)"   #Tabelname: tmp_humidity; Columns: bed, date, time, value
-                val = (int("1"), date, timeNow, payload) #Date: YYYY/MM/DD
-                mycursor.execute(sql, val)
-                mydb.commit()
-                print("| {}   | committed              |           |".format(timeNow))
+        temphumidity.humidity = payload
+        print("|------------|------------------------|-----------|")
+        print("| {} | humidity               |   {}%   |".format(date, payload))
+        try:
+            sql = "INSERT INTO tmp_humidity (bed, date, time, value) VALUES (%s, %s, %s, %s)"   #Tabelname: tmp_humidity; Columns: bed, date, time, value
+            val = (int("1"), date, timeNow, payload) #Date: YYYY/MM/DD
+            mycursor.execute(sql, val)
+            mydb.commit()
+            print("| {}   | committed              |           |".format(timeNow))
+            failedHumidity = 0
 
-            except:
-                print("| {}   | Error commiting to database        |".format(timeNow))
-            print("|------------|------------------------|-----------|")
+        except:
+            print("| {}   | Error commiting to database        |".format(timeNow))
+            if failedHumidity == 20:
+                message = """\
+
+                Subject: ERROR
+
+
+                {}
+                {}
+
+                The system has a problem commiting data to the database, check output and consider restarting the script
+
+                Affected data: humdity
+                Failed Attempts in a row: 20
+
+                Temperature: {}C
+                Humidity: {}%
+                Fanspeed: {}/1000""".format(date, timeNow, temphumidity.temperature, temphumidity.humidity, fanspeed)
+
+                context = ssl.create_default_context()
+
+                with smtplib.SMTP(emailinfo.smtp_server, emailinfo.port) as server:
+                    server.starttls(context=context)
+                    server.login(emailinfo.sender_email, emailinfo.password)
+                    server.sendmail(emailinfo.sender_email, emailinfo.receiver_email, message)
+                failedHumidity = 0
+        print("|------------|------------------------|-----------|")
     elif msg.topic == "tmp_temperature":
-            temphumidity.temperature = payload
-            print("| {} | temperature            |   {}°C    |".format(date, payload))
-            try:
-                sql = "INSERT INTO tmp_temperature (bed, date, time, value) VALUES (%s, %s, %s, %s)"   #Tabelname: tmp_temperature; Columns: bed, date, time, value
-                val = (int("1"), date, timeNow, msg.payload) #Date: YYYY/MM/DD
-                mycursor.execute(sql, val)
-                mydb.commit()
-                print("| {}   | commited               |           |".format(timeNow))
-            except:
-                print("| {}   | Error commiting to database        |".format(timeNow))
+        temphumidity.temperature = payload
+        print("| {} | temperature            |   {}°C    |".format(date, payload))
+        try:
+            sql = "INSERT INTO tmp_temperature (bed, date, time, value) VALUES (%s, %s, %s, %s)"   #Tabelname: tmp_temperature; Columns: bed, date, time, value
+            val = (int("1"), date, timeNow, msg.payload) #Date: YYYY/MM/DD
+            mycursor.execute(sql, val)
+            mydb.commit()
+            print("| {}   | commited               |           |".format(timeNow))
+            failedTemperature = 0
+        except:
+            print("| {}   | Error commiting to database        |".format(timeNow))
+            if failedTemperature == 20:
+                message = """\
 
-            if int(payload) > int(setTemperature) and fanspeed <= 975:
-                difference1 = int(payload) - int(setTemperature)
-                fanspeed += 50 * difference1
-                if fanspeed > 1000:
-                    fanspeed = 1000
-                wiringpi.pwmWrite(18,fanspeed)
-                print("|------------|------------------------|-----------|")
-                print(">>> fanspeed increased ({})".format(fanspeed))
-            elif int(payload) < int(setTemperature) and fanspeed >= 250:
-                fanspeed -= 50 * int(setTemperature) - int(payload)
-                if fanspeed < 150:
-                    fanspeed = 150
-                wiringpi.pwmWrite(18,fanspeed)
-                print("|------------|------------------------|-----------|")
-                print(">>> fanspeed decreased ({})".format(fanspeed))
-            else:
-                print("|------------|------------------------|-----------|")
-            print("")
+                Subject: ERROR
 
-    elif msg.topic == "fan_speed":
-            fanspeed = int(msg.payload)
+
+                {}
+                {}
+
+                The system has a problem commiting data to the database, check output and consider restarting the script
+
+                Affected data: temperature
+                Failed Attempts in a row: 20
+
+                Temperature: {}C
+                Humidity: {}%
+                Fanspeed: {}/1000""".format(date, timeNow, temphumidity.temperature, temphumidity.humidity, fanspeed)
+
+                context = ssl.create_default_context()
+
+                with smtplib.SMTP(emailinfo.smtp_server, emailinfo.port) as server:
+                    server.starttls(context=context)
+                    server.login(emailinfo.sender_email, emailinfo.password)
+                    server.sendmail(emailinfo.sender_email, emailinfo.receiver_email, message)
+                failedTemperature = 0
+
+        if int(payload) > int(setTemperature) and fanspeed <= 975:
+            difference1 = int(payload) - int(setTemperature)
+            fanspeed += 50 * difference1
             if fanspeed > 1000:
                 fanspeed = 1000
-            elif fanspeed < 150:
+            wiringpi.pwmWrite(18,fanspeed)
+            print("|------------|------------------------|-----------|")
+            print(">>> fanspeed increased ({})".format(fanspeed))
+        elif int(payload) < int(setTemperature) and fanspeed >= 250:
+            fanspeed -= 50 * int(setTemperature) - int(payload)
+            if fanspeed < 150:
                 fanspeed = 150
             wiringpi.pwmWrite(18,fanspeed)
-            print(">>> fanspeed manually adjusted ({})".format(fanspeed))
+            print("|------------|------------------------|-----------|")
+            print(">>> fanspeed decreased ({})".format(fanspeed))
+        else:
+            print("|------------|------------------------|-----------|")
+        print("")
+    elif msg.topic == "fan_speed":
+        fanspeed = int(msg.payload)
+        if fanspeed > 1000:
+            fanspeed = 1000
+        elif fanspeed < 150:
+            fanspeed = 150
+        wiringpi.pwmWrite(18,fanspeed)
+        print(">>> fanspeed manually adjusted ({})".format(fanspeed))
 
     else:
         print("Error, unknown topic: " + msg.topic)
@@ -222,14 +279,14 @@ def on_message(client, userdata, msg):
         print(">>> " + "Turning light ON!")
         light = 1
         message = """\
-        Subject: Spacebucket Light on
-
+        Subject: Spacebucket Light on\n\n
 
         {}
         {}
 
         Temperature: {}C
-        Humidity: {}% """.format(date, timeNow, temphumidity.temperature, temphumidity.humidity)
+        Humidity: {}%
+        Fanspeed: {}/1000""".format(date, timeNow, temphumidity.temperature, temphumidity.humidity, fanspeed)
 
         context = ssl.create_default_context()
 
@@ -245,14 +302,14 @@ def on_message(client, userdata, msg):
         print(">>> " + "Turning light OFF!")
         light = 0
         message = """\
-        Subject: Spacebucket Light off
-
+        Subject: Spacebucket Light off\n\n
 
         {}
         {}
 
         Temperature: {}C
-        Humidity: {}% """.format(date, timeNow, temphumidity.temperature, temphumidity.humidity)
+        Humidity: {}%
+        Fanspeed: {}/1000""".format(date, timeNow, temphumidity.temperature, temphumidity.humidity, fanspeed)
 
         context = ssl.create_default_context()
 
@@ -261,7 +318,6 @@ def on_message(client, userdata, msg):
             server.login(emailinfo.sender_email, emailinfo.password)
             server.sendmail(emailinfo.sender_email, emailinfo.receiver_email, message)
         print("Email sent")
-    print(light)
 
 client = mqtt.Client()
 client.on_connect = on_connect
