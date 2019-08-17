@@ -165,6 +165,7 @@ def on_message(client, userdata, msg):
     LightTo = LightOff + midnight
 
     if msg.topic == "tmp_humidity":
+        global failedHumidity
         temphumidity.humidity = payload
         print("|------------|------------------------|-----------|")
         print("| {} | humidity               |   {}%   |".format(date, payload))
@@ -178,6 +179,7 @@ def on_message(client, userdata, msg):
 
         except:
             print("| {}   | Error commiting to database        |".format(timeNow))
+            failedHumidity += 1
             if failedHumidity == 20:
                 message = """\
 
@@ -205,6 +207,7 @@ def on_message(client, userdata, msg):
                 failedHumidity = 0
         print("|------------|------------------------|-----------|")
     elif msg.topic == "tmp_temperature":
+        global failedTemperature
         temphumidity.temperature = payload
         print("| {} | temperature            |   {}°C    |".format(date, payload))
         try:
@@ -216,6 +219,7 @@ def on_message(client, userdata, msg):
             failedTemperature = 0
         except:
             print("| {}   | Error commiting to database        |".format(timeNow))
+            failedTemperature += 1
             if failedTemperature == 20:
                 message = """\
 
