@@ -127,8 +127,25 @@ sudo python3 mqtt_subscriber.py
 sudo python3 mqtt_publisher.py
 ```
 
-With the publisher program running, you can also use commands to interven in the program:
+### Command line arguments:
+
+When starting the subscriber program you can use command line arguments:
+
+```
+sudo python3 mqtt_subscriber.py -h
+```
+
+```
+usage: mqtt_subscriber.py [-h] [-d]
+
+optional arguments:
+  -h, --help   show this help message and exit
+  -d, --debug  Toggle debug output
+```
+
 ### Commands:
+
+With the publisher program running, you can also use commands to interven in the program:
 
 To list all available commands type:
 ```
