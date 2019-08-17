@@ -34,6 +34,8 @@ For this project I'm using two Raspberry Pis, a Zero W (publisher) to capture se
 
 3. [Usage](#usage)
 
+   - [Command line arguments](#command-line-arguments)
+
    - [Commands](#commands)
 
 ---
