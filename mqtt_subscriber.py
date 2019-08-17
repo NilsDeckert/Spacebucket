@@ -179,6 +179,7 @@ def on_message(client, userdata, msg):
 
         except:
             print("| {}   | Error commiting to database        |".format(timeNow))
+            failedHumidity += 1
             if failedHumidity == 20:
                 message = """\
 
@@ -218,6 +219,7 @@ def on_message(client, userdata, msg):
             failedTemperature = 0
         except:
             print("| {}   | Error commiting to database        |".format(timeNow))
+            failedTemperature += 1
             if failedTemperature == 20:
                 message = """\
 
