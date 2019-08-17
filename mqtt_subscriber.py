@@ -3,6 +3,7 @@
 import paho.mqtt.client as mqtt
 import wiringpi
 import atexit
+import argparse
 import sys
 import time
 import datetime
@@ -29,6 +30,12 @@ global failedTemperature
 global light
 global LightOn
 global LightOff
+
+parser = argparse.ArgumentParser()
+parser.add_argument("-d", "--debug", help="Toggle debug output", action="store_true")
+args = parser.parse_args()
+debug = args.debug
+
 ################### Welcome Message ###################
 print("-----------------------------------------------------------------")
 print("                   Subscriber program started                    ")
@@ -140,11 +147,15 @@ def quit():
     print("                   Subscriber program stopped                    ")
     print("-----------------------------------------------------------------" + "\n")
 
+if debug:
+    print(">>> Debug mode turned on \n")
+
 TurnOnFans()
 LightSchedule()
 
 #while True:
 def on_message(client, userdata, msg):
+    global debug
     global fanspeed
     global setTemperature
     global now
@@ -322,6 +333,10 @@ def on_message(client, userdata, msg):
             server.login(emailinfo.sender_email, emailinfo.password)
             server.sendmail(emailinfo.sender_email, emailinfo.receiver_email, message)
         print("Email sent")
+    if debug:
+        print("light status: " + str(light))
+        print("failedHumidity: " + str(failedHumidity))
+        print("failedTemperature: " + str(failedTemperature))
 
 client = mqtt.Client()
 client.on_connect = on_connect
