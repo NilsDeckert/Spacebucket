@@ -166,7 +166,8 @@ def on_message(client, userdata, msg):
     global failedTemperature
 
     localtime = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    date = datetime.datetime.now().strftime('%d.%m.%Y')
+    date = datetime.datetime.now().strftime('%Y.%m.%d')
+    date2 = datetime.datetime.now().strftime('%d.%m.%Y')
     timeNow = datetime.datetime.now().strftime('%H:%M:%S')
     msg.payload = msg.payload.decode("utf-8")
     payload = msg.payload
@@ -179,7 +180,7 @@ def on_message(client, userdata, msg):
         global failedHumidity
         temphumidity.humidity = payload
         print("|------------|------------------------|-----------|")
-        print("| {} | humidity               |   {}%   |".format(date, payload))
+        print("| {} | humidity               |   {}%   |".format(date2, payload))
         try:
             sql = "INSERT INTO tmp_humidity (bed, date, time, value) VALUES (%s, %s, %s, %s)"   #Tabelname: tmp_humidity; Columns: bed, date, time, value
             val = (int("1"), date, timeNow, payload) #Date: YYYY/MM/DD
@@ -207,7 +208,7 @@ def on_message(client, userdata, msg):
 
                 Temperature: {}C
                 Humidity: {}%
-                Fanspeed: {}/1000""".format(date, timeNow, temphumidity.temperature, temphumidity.humidity, fanspeed)
+                Fanspeed: {}/1000""".format(date2, timeNow, temphumidity.temperature, temphumidity.humidity, fanspeed)
 
                 context = ssl.create_default_context()
 
@@ -220,7 +221,7 @@ def on_message(client, userdata, msg):
     elif msg.topic == "tmp_temperature":
         global failedTemperature
         temphumidity.temperature = payload
-        print("| {} | temperature            |   {}°C    |".format(date, payload))
+        print("| {} | temperature            |   {}°C    |".format(date2, payload))
         try:
             sql = "INSERT INTO tmp_temperature (bed, date, time, value) VALUES (%s, %s, %s, %s)"   #Tabelname: tmp_temperature; Columns: bed, date, time, value
             val = (int("1"), date, timeNow, msg.payload) #Date: YYYY/MM/DD
@@ -247,7 +248,7 @@ def on_message(client, userdata, msg):
 
                 Temperature: {}C
                 Humidity: {}%
-                Fanspeed: {}/1000""".format(date, timeNow, temphumidity.temperature, temphumidity.humidity, fanspeed)
+                Fanspeed: {}/1000""".format(date2, timeNow, temphumidity.temperature, temphumidity.humidity, fanspeed)
 
                 context = ssl.create_default_context()
 
