@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import paho.mqtt.publish as publish
@@ -61,12 +60,6 @@ finally:
 ################################################
 
 print("|------------|------------------------|-----------|")
-
-def callback(channel):
-    if GPIO.input(channel):
-        print("no water detected")
-    else:
-        print("water detected")
 
 def push():
     try:
@@ -133,7 +126,6 @@ GPIO.add_event_callback(10, button_callback)
 
 push()
 print(">>> {} Setting up initial time delay".format(datetime.datetime.now().strftime('%H:%M:%S')))
-time.sleep(450)
 time.sleep(15) #450
 print(">>> Done")
 print("|------------|------------------------|-----------|")
@@ -158,9 +150,6 @@ while True:
 
         elif command == "fanspeed":
             fan_speed = input("Fanspeed:")
-            if fan_speed:
-                print("Fanspeed: " + fan_speed)
-                publish.single("fan_speed", int(fan_speed), hostname=MQTT_SERVER)
             try:
                 fan_speed = int(fan_speed)
                 if fan_speed:
@@ -171,10 +160,19 @@ while True:
                     print("Input has to be a number")
             #print("|------------|------------------------|-----------|")
 
+        elif command == "light on":
+            publish.single("msg_light", "on", hostname=MQTT_SERVER)
+            print("Turning on light...")
+        elif command == "light off":
+            publish.single("msg_light", "off", hostname=MQTT_SERVER)
+            print("Turning off light...")
+
         elif command == "help":
             print("Available commands:")
-            print("  >force measure")
             print("  >fanspeed")
+            print("  >force measure")
+            print("  >light on")
+            print("  >light off")
             print("  >exit")
 
         elif command == "exit":
