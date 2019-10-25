@@ -4,6 +4,7 @@
 import paho.mqtt.publish as publish
 import RPi.GPIO as GPIO
 import Adafruit_DHT
+import argparse
 import threading
 import time
 import datetime
@@ -20,6 +21,11 @@ GPIO.setup(channel, GPIO.IN)
 GPIO.setup(10, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 GPIO_Pin = 23
 stopthread = 0
+
+parser = argparse.ArgumentParser()
+parser.add_argument("-d", "--debug", help="Toggle debug output and additional commands", action="store_true")
+args = parser.parse_args()
+debug = args.debug
 
 ################### Welcome Message ###################
 print("-----------------------------------------------------------------")
