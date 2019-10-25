@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import paho.mqtt.publish as publish
 import RPi.GPIO as GPIO
@@ -16,6 +17,7 @@ DHTSensor = Adafruit_DHT.DHT11
 GPIO.setmode(GPIO.BCM)
 channel = 21
 GPIO.setup(channel, GPIO.IN)
+GPIO.setup(10, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 GPIO_Pin = 23
 stopthread = 0
 
@@ -103,11 +105,30 @@ def push2():
         exit()
         #cleanup_stop_thread()
         sys.exit()
+##Soil sensor
+def callback(channel):
+    if GPIO.input(channel):
+        print("no water detected")
+        publish.single("tmp_soil", "no water", hostname=MQTT_SERVER)
+        print("message sent")
+    else:
+        publish.single("tmp_soil", "water", hostname=MQTT_SERVER)
+        print("water detected")
 
+GPIO.add_event_detect(channel, GPIO.BOTH, bouncetime=300)
+GPIO.add_event_callback(channel, callback)
+
+##Water sensor
+def button_callback(channel1):
+    print("Button pressed!")
+
+GPIO.add_event_detect(10, GPIO.RISING)
+GPIO.add_event_callback(10, button_callback)
 
 push()
 print(">>> {} Setting up initial time delay".format(datetime.datetime.now().strftime('%H:%M:%S')))
 time.sleep(450)
+time.sleep(15) #450
 print(">>> Done")
 print("|------------|------------------------|-----------|")
 push2()
@@ -134,6 +155,14 @@ while True:
             if fan_speed:
                 print("Fanspeed: " + fan_speed)
                 publish.single("fan_speed", int(fan_speed), hostname=MQTT_SERVER)
+            try:
+                fan_speed = int(fan_speed)
+                if fan_speed:
+                    print("Fanspeed: " + str(fan_speed))
+                    publish.single("fan_speed", fan_speed, hostname=MQTT_SERVER)
+            except ValueError:
+                if fan_speed:
+                    print("Input has to be a number")
             #print("|------------|------------------------|-----------|")
 
         elif command == "help":
