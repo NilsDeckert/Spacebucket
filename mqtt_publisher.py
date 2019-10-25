@@ -151,8 +151,8 @@ while True:
         elif command == "fanspeed":
             fan_speed = input("Fanspeed:")
             try:
-                fan_speed = int(fan_speed)
-                if fan_speed:
+                fan_speed = int(fan_speed) #Make sure input is a number
+                if fan_speed:              #Check if user gave input or just hit enter to skip
                     print("Fanspeed: " + str(fan_speed))
                     publish.single("fan_speed", fan_speed, hostname=MQTT_SERVER)
             except ValueError:
@@ -167,12 +167,37 @@ while True:
             publish.single("msg_light", "off", hostname=MQTT_SERVER)
             print("Turning off light...")
 
+        elif command == "simulate temperature" and debug: #Only allow command if script is started in debugmode
+            sim_temperature = input("Temperature:")
+            try:
+                sim_temperature = int(sim_temperature) #Make sure input is a number
+                if sim_temperature:                    #Check if user gave input or just hit enter to skip
+                    print("Simulating Temperature: " + sim_temperature + "C")
+                    publish.single("tmp_temperature", sim_temperature, hostname=MQTT_SERVER)
+            except ValueError:
+                if sim_temperature:
+                    print("Input has to be a number")
+
+        elif command == "simulate humidity" and debug: #Only allow command if script is started in debugmode
+            sim_humidity = input("Humidity:")
+            try:
+                sim_humidity = int(sim_humidity) #Make sure input is a number
+                if sim_humidity:                    #Check if user gave input or just hit enter to skip
+                    print("Simulating Humidity: " + sim_humidity + "%")
+                    publish.single("tmp_humidity", sim_humidity, hostname=MQTT_SERVER)
+            except ValueError:
+                if sim_humidity:
+                    print("Input has to be a number")
+
         elif command == "help":
             print("Available commands:")
             print("  >fanspeed")
             print("  >force measure")
             print("  >light on")
             print("  >light off")
+            if debug:
+                print("simulate temperature")
+                print("simulate humidty")
             print("  >exit")
 
         elif command == "exit":
