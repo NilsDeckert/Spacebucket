@@ -131,7 +131,7 @@ sudo python3 mqtt_publisher.py
 
 ### Command line arguments:
 
-When starting the subscriber program you can use command line arguments:
+When starting the scripts you can use command line arguments:
 
 ```
 sudo python3 mqtt_subscriber.py -h
@@ -165,3 +165,13 @@ You can manually adjust the fanspeed using:
 fanspeed
 ```
 followed by a number between 0 and 1000 in the next line.
+
+With debug mode enabled, you can use
+```
+simulate temperature
+```
+and
+```
+simulate humidity
+```
+followed by a number of choice to simulate the corresponding value and send it to the subscriber
