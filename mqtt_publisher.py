@@ -172,7 +172,7 @@ while True:
             try:
                 sim_temperature = int(sim_temperature) #Make sure input is a number
                 if sim_temperature:                    #Check if user gave input or just hit enter to skip
-                    print("Simulating Temperature: " + sim_temperature + "C")
+                    print("Simulating Temperature: {}°C".format(sim_temperature))
                     publish.single("tmp_temperature", sim_temperature, hostname=MQTT_SERVER)
             except ValueError:
                 if sim_temperature:
@@ -183,7 +183,7 @@ while True:
             try:
                 sim_humidity = int(sim_humidity) #Make sure input is a number
                 if sim_humidity:                    #Check if user gave input or just hit enter to skip
-                    print("Simulating Humidity: " + sim_humidity + "%")
+                    print("Simulating Humidity: {}%".format(sim_humidity))
                     publish.single("tmp_humidity", sim_humidity, hostname=MQTT_SERVER)
             except ValueError:
                 if sim_humidity:
@@ -196,8 +196,8 @@ while True:
             print("  >light on")
             print("  >light off")
             if debug:
-                print("simulate temperature")
-                print("simulate humidty")
+                print("  >simulate temperature")
+                print("  >simulate humidty")
             print("  >exit")
 
         elif command == "exit":
