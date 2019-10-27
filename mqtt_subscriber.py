@@ -87,20 +87,20 @@ def LightOnOff():
     global LightFrom
     global LightTo
     if LightFrom < now < LightTo:
-        call(["./outlet", "1"])
+        call(["./steuerung", "1"])
         print(">>> " + "Turning light ON! (1/2)")
         light = 1
     else:
-        call(["./outlet", "2"])
+        call(["./steuerung", "2"])
         print(">>> " + "Turning light OFF! (1/2)")
         light = 0
     time.sleep(5)
     if LightFrom < now < LightTo:
-        call(["./outlet", "1"])
+        call(["./steuerung", "1"])
         print(">>> " + "Turning light ON! (2/2)")
         light = 1
     else:
-        call(["./outlet", "2"])
+        call(["./steuerung", "2"])
         print(">>> " + "Turning light OFF! (2/2)")
         light = 0
 
@@ -108,7 +108,7 @@ def LightSchedule():
     try:
         LightOnOff()
     except:
-        call(["./outlet", "2"])
+        call(["./steuerung", "2"])
         print("Error in LightSchedule()")
         exit()
 
@@ -132,14 +132,15 @@ def on_connect(client, userdata, flags, rc):
         client.subscribe("set_humidity")
         client.subscribe("set_temperature")
         client.subscribe("fan_speed")
+        client.subscribe("msg_light")
 
 def quit():
     print("")
     client.loop_stop()
-    call(["./outlet", "2"])
+    call(["./steuerung", "2"])
     print(">>> " + "Turning light OFF! (1/2)")
     time.sleep(3)
-    call(["./outlet", "2"])
+    call(["./steuerung", "2"])
     print(">>> " + "Turning light OFF! (2/2)")
     reset_ports()
     print(">>> " + "Turning fans OFF" + "\n")
@@ -285,13 +286,10 @@ def on_message(client, userdata, msg):
         wiringpi.pwmWrite(18,fanspeed)
         print(">>> fanspeed manually adjusted ({})".format(fanspeed))
 
-    else:
-        print("Error, unknown topic: " + msg.topic)
-
     now = datetime.datetime.now()
 
     if light == 0 and LightFrom < now < LightTo:
-        call(["./outlet", "1"])
+        call(["./steuerung", "1"])
         print(">>> " + "Turning light ON!")
         light = 1
         message = """\
@@ -314,7 +312,7 @@ def on_message(client, userdata, msg):
         newday = 0
 
     elif light == 1 and now > LightTo > LightFrom or light == 1 and LightFrom > LightTo > now:
-        call(["./outlet", "2"])
+        call(["./steuerung", "2"])
         print(">>> " + "Turning light OFF!")
         light = 0
         message = """\
@@ -334,6 +332,17 @@ def on_message(client, userdata, msg):
             server.login(emailinfo.sender_email, emailinfo.password)
             server.sendmail(emailinfo.sender_email, emailinfo.receiver_email, message)
         print("Email sent")
+
+    if msg.topic == "msg_light":
+        if msg.payload == "on" and light != 1:
+            call(["./steuerung", "1"])
+            light = 1
+            print("Manually turned on light")
+        elif msg.payload == "off" and light != 0:
+            call(["./steuerung", "2"])
+            light = 0
+            print("Manually turned off light")
+
     if debug:
         print("light status: " + str(light))
         print("failedHumidity: " + str(failedHumidity))
