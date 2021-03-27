@@ -1,6 +1,6 @@
 # Spacebucket
 
-Doing a fully automated spacebucket using a Raspberry Pi 2 and Raspberry Pi Zero W.
+Building a fully automated spacebucket using a Raspberry Pi 2 and Raspberry Pi Zero W.
 
 Have a look at the [wiki](https://github.com/NilsDeckert/Spacebucket/wiki) for a more detailed insight into the idea
 
